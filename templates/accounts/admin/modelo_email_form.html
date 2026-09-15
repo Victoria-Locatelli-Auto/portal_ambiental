@@ -1,0 +1,17 @@
+{% extends "layout/base.html" %}
+{% block titulo %}Editar e-mail{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Editar {{ modelo.get_tipo_display }}</h1><div class="d">Personalize o assunto e o conteúdo enviado automaticamente.</div></div>
+  <a class="btn sec" href="{% url 'administracao:modelos_email' %}">← Voltar</a>
+</header>
+<div class="note"><b>Variáveis disponíveis:</b> {% verbatim %}{{ unidade.nome }}, {{ unidade.cnpj }}, {{ item.tipo.nome }}, {{ item.documento.identificacao }}, {{ dias_restantes }}, {{ atraso }}, {{ total }}{% endverbatim %}. Estruturas existentes, como loops do resumo e da cobrança, podem ser mantidas.</div>
+<form method="post" class="card admin-form">{% csrf_token %}
+  {% for campo in formulario %}<div class="admin-field wide">
+    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}
+    {% if campo.help_text %}<div class="hint">{{ campo.help_text }}</div>{% endif %}
+    {% for erro in campo.errors %}<div class="field-error">{{ erro }}</div>{% endfor %}
+  </div>{% endfor %}
+  <div class="admin-form-footer"><a class="btn sec" href="{% url 'administracao:modelos_email' %}">Cancelar</a><button class="btn" type="submit">Salvar texto</button></div>
+</form>
+{% endblock %}

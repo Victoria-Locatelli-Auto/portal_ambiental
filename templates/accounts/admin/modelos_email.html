@@ -1,0 +1,29 @@
+{% extends "layout/base.html" %}
+{% block titulo %}Textos dos e-mails{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Notificações por e-mail</h1><div class="d">Configure os textos usados nos disparos automáticos do SIGA.</div></div>
+</header>
+
+<section class="card p">
+  <h2>Integração de envio</h2>
+  <div class="hint">Remetente: <b>{{ remetente }}</b> · Provedor: <span class="mono">{{ backend }}</span></div>
+  <form method="post" class="filter" style="margin-top:16px">{% csrf_token %}
+    <div><label for="{{ formulario_teste.destinatario.id_for_label }}">{{ formulario_teste.destinatario.label }}</label>{{ formulario_teste.destinatario }}{% for erro in formulario_teste.destinatario.errors %}<div class="field-error">{{ erro }}</div>{% endfor %}</div>
+    <button class="btn" type="submit">Enviar teste</button>
+  </form>
+</section>
+
+<section class="card" style="margin-top:16px">
+  <div class="ch"><h2>Textos automáticos</h2></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Notificação</th><th>Assunto</th><th>Situação</th><th>Ações</th></tr></thead>
+    <tbody>{% for modelo in modelos %}<tr>
+      <td><b>{{ modelo.get_tipo_display }}</b></td>
+      <td>{{ modelo.assunto }}</td>
+      <td><span class="pill {% if modelo.ativo %}p-ok{% else %}p-info{% endif %}">{% if modelo.ativo %}Ativo{% else %}Padrão do sistema{% endif %}</span></td>
+      <td><a class="btn sec sm" href="{% url 'administracao:modelo_email_editar' modelo.pk %}">Editar texto</a></td>
+    </tr>{% empty %}<tr><td colspan="4">Execute as migrações para criar os modelos iniciais.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+Prezado(a) {{ unidade.responsavel_nome|default:"responsavel" }},
+
+A casa {{ unidade.nome }} tem {{ total }} documento(s) do checklist ainda nao
+enviados ao SIGA:
+
+{% for item in itens %}  {{ forloop.counter|stringformat:"2d" }}. {{ item.tipo.nome }}
+      -> {{ item.tipo.instrucao }}
+      Base legal: {{ item.tipo.base_legal|truncatechars:110 }}
+{% endfor %}
+Acesse o SIGA, abra o Checklist da casa e envie cada documento pelo botao de
+upload da linha correspondente. Ao salvar, o item ja fica marcado como atendido
+e sai desta cobranca.
+
+--
+Mensagem semanal automatica do SIGA - Sistema Integrado de Gestao Ambiental MCM

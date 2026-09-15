@@ -1,0 +1,20 @@
+ATENCAO - DOCUMENTO VENCIDO
+
+Prezado(a) {{ unidade.responsavel_nome|default:"responsavel" }},
+
+  Casa .........: {{ unidade.nome }} - CNPJ {{ unidade.cnpj }}
+  Documento ....: {{ item.tipo.nome }}
+  Identificacao : {{ item.documento.identificacao }}
+  Venceu em ....: {{ item.vencimento|date:"d/m/Y" }} (ha {{ atraso }} dias)
+  Base legal ...: {{ item.tipo.base_legal }}
+
+A casa esta operando sem cobertura legal neste item, o que expoe a MCM a
+autuacao administrativa (Decreto 6.514/2008).
+
+O QUE FAZER IMEDIATAMENTE
+{{ item.tipo.instrucao }}
+
+Este aviso sera reenviado diariamente ate a regularizacao.
+
+--
+SIGA - Sistema Integrado de Gestao Ambiental MCM

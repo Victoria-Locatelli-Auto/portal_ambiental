@@ -1,0 +1,23 @@
+{% extends "layout/base.html" %}{% load siga_tags %}
+{% block titulo %}Checklist das casas{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Checklist — resumo das casas</h1></div>
+</header>
+<div class="card"><div class="ch"><h2>Situação por casa</h2></div>
+<div class="tw"><table>
+  <thead><tr><th>Casa</th><th>UF</th><th>Responsável</th><th>Exigidos</th><th>Não enviados</th>
+    <th>Vencidos</th><th>Vencendo</th><th>Em análise</th><th>Ação da casa</th><th>Índice</th><th></th></tr></thead>
+  <tbody>{% for r in resumos %}
+    <tr><td><b>{{ r.unidade.nome }}</b><div class="hint mono">{{ r.unidade.cnpj }}</div></td>
+      <td>{{ r.unidade.uf }}</td>
+      <td>{% if r.unidade.responsavel_nome %}{{ r.unidade.responsavel_nome }}
+        {% else %}<span class="pill p-venc">a designar</span>{% endif %}</td>
+      <td>{{ r.total }}</td><td><b>{{ r.pendente }}</b></td>
+      <td style="color:var(--danger)"><b>{{ r.vencido }}</b></td>
+      <td style="color:var(--crit)"><b>{{ r.critico }}</b></td>
+      <td>{{ r.em_analise }}</td><td><b>{{ r.acao_da_casa }}</b></td>
+      <td><span class="pill" style="background:{{ r.percentual|cor_percentual }}22;color:{{ r.percentual|cor_percentual }}">{{ r.percentual }}%</span></td>
+      <td><a class="btn sm sec" href="{% url 'dashboard:checklist' r.unidade.codigo %}">Abrir checklist</a></td></tr>
+  {% endfor %}</tbody></table></div></div>
+{% endblock %}

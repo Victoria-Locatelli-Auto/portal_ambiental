@@ -1,0 +1,32 @@
+{% extends "layout/base.html" %}
+{% block titulo %}Acessos e usuários{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Acessos e usuários</h1><div class="d">Controle quem entra no SIGA e quais unidades cada pessoa pode visualizar.</div></div>
+  <a class="btn" href="{% url 'administracao:usuario_criar' %}">+ Novo acesso</a>
+</header>
+
+<form method="get" class="admin-search">
+  <input class="inp" type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome ou e-mail">
+  <button class="btn sec" type="submit">Buscar</button>
+</form>
+
+<div class="card"><div class="tw"><table>
+  <thead><tr><th>Usuário</th><th>Perfil de acesso</th><th>Escopo</th><th>Notificações</th><th>Status</th><th>Ações</th></tr></thead>
+  <tbody>
+  {% for pessoa in usuarios %}
+    <tr class="{% if not pessoa.is_active %}row-inactive{% endif %}">
+      <td><b>{{ pessoa.nome_exibicao }}</b><div class="hint">{{ pessoa.email }}{% if pessoa.cargo %} · {{ pessoa.cargo }}{% endif %}</div></td>
+      <td>{{ pessoa.get_perfil_display }}</td>
+      <td>{% if pessoa.escopo_global %}Todas as unidades{% elif pessoa.unidade %}{{ pessoa.unidade.nome }}{% else %}Sem unidade{% endif %}</td>
+      <td>{% if pessoa.recebe_notificacoes %}Recebe{% else %}Não recebe{% endif %}</td>
+      <td><span class="pill {% if pessoa.is_active %}p-ok{% else %}p-pend{% endif %}">{% if pessoa.is_active %}Ativo{% else %}Inativo{% endif %}</span></td>
+      <td class="admin-actions">
+        <a class="btn sec sm" href="{% url 'administracao:usuario_editar' pessoa.pk %}">Editar</a>
+        {% if pessoa != user %}<a class="btn sec sm" href="{% url 'administracao:usuario_alternar' pessoa.pk %}">{% if pessoa.is_active %}Desativar{% else %}Reativar{% endif %}</a>{% endif %}
+      </td>
+    </tr>
+  {% empty %}<tr><td colspan="6" class="empty-state">Nenhum usuário encontrado.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

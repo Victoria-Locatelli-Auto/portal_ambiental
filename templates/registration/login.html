@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar · SIGA MCM</title>
+  <link rel="stylesheet" href="{% static 'css/siga.css' %}?v=20260831-login-foto">
+</head>
+<body class="login-page">
+  <main class="login-split">
+    <section class="login-visual" aria-label="Filial MCM São Luís">
+      <img src="{% static 'img/filial-sao-luis.jpeg' %}" alt="Fachada da filial MCM São Luís">
+      <div class="login-visual-shade" aria-hidden="true"></div>
+      <div class="login-visual-copy">
+        <p>Conformidade que conecta todas as unidades.</p>
+      </div>
+    </section>
+
+    <section class="login-panel">
+      <div class="login-panel-content">
+        <div class="login-panel-top">
+          <a class="login-brand" href="/" aria-label="SIGA MCM">
+            <img class="login-brand-mark" src="{% static 'img/mcm-logo.png' %}" alt="">
+            <span class="login-brand-copy"><strong>MCM</strong><small>Caminhões e Ônibus</small></span>
+            <span class="login-brand-divider" aria-hidden="true"></span>
+            <span class="login-product"><strong>SIGA</strong><small>Gestão Ambiental</small></span>
+          </a>
+        </div>
+
+        <div class="login-card" aria-labelledby="login-form-title">
+          <h2 id="login-form-title">Bem-vindo</h2>
+          <p class="login-card-intro">
+            Acesse documentos, acompanhe vencimentos e mantenha a gestão ambiental da MCM organizada.
+          </p>
+
+          {% if form.errors %}
+            <div class="msg error" role="alert">E-mail ou senha inválidos. Verifique os dados e tente novamente.</div>
+          {% endif %}
+
+          <form method="post" class="login-form">
+            {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+            <label for="id_username">E-mail <span aria-hidden="true">*</span></label>
+            <div class="login-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>
+              {{ form.username }}
+            </div>
+
+            <label for="id_password">Senha <span aria-hidden="true">*</span></label>
+            <div class="login-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              {{ form.password }}
+            </div>
+
+            <button class="login-submit" type="submit">
+              Entrar no SIGA <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div class="login-security">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-2.8 8.1-7 10-4.2-1.9-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+            Acesso restrito a colaboradores e parceiros autorizados da MCM.
+          </div>
+        </div>
+      </div>
+      <footer class="login-footer">
+        <span>© {% now "Y" %} MCM Caminhões e Ônibus</span>
+        <span>Sistema Integrado de Gestão Ambiental</span>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    const email = document.getElementById('id_username');
+    const password = document.getElementById('id_password');
+    if (email) {
+      email.placeholder = 'nome@mcm.com.br';
+      email.autocomplete = 'username';
+      email.inputMode = 'email';
+      email.autofocus = true;
+    }
+    if (password) {
+      password.placeholder = 'Digite sua senha';
+      password.autocomplete = 'current-password';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+Prezado(a) {{ unidade.responsavel_nome|default:"responsavel" }},
+
+O documento abaixo, exigido pela legislacao ambiental, esta proximo do vencimento:
+
+  Casa .........: {{ unidade.nome }} - CNPJ {{ unidade.cnpj }}
+  Documento ....: {{ item.tipo.nome }}
+  Identificacao : {{ item.documento.identificacao }}
+  Orgao ........: {{ unidade.orgao_estadual }}
+  Vencimento ...: {{ item.vencimento|date:"d/m/Y" }} ({{ dias_restantes }} dias)
+  Base legal ...: {{ item.tipo.base_legal }}
+
+O QUE FAZER
+{{ item.tipo.instrucao }}
+
+Acesse o SIGA e envie o documento pela tela Checklist da casa.
+
+--
+Mensagem automatica do SIGA - Sistema Integrado de Gestao Ambiental MCM.
+Copia para a STX Engenharia e Meio Ambiente, responsavel tecnica pelo
+atendimento aos orgaos ambientais.

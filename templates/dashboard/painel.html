@@ -1,0 +1,97 @@
+{% extends "layout/base.html" %}{% load siga_tags humanize %}
+{% block titulo %}Painel{% endblock %}
+{% block conteudo %}
+{% with secao="painel" %}{% endwith %}
+<header class="pg">
+  <div><h1>Painel principal</h1></div>
+</header>
+
+<div class="grid kpis" style="margin-bottom:16px">
+  <div class="card p kpi"><div class="k">Conformidade geral</div>
+    <div class="v" style="color:{{ indice_geral|cor_percentual }}">{{ indice_geral }}%</div>
+    <div class="bar" style="margin-top:8px"><i style="width:{{ indice_geral }}%;background:{{ indice_geral|cor_percentual }}"></i></div>
+    <div class="f">{{ total_requisitos }} requisitos aplicáveis</div></div>
+  <div class="card p kpi"><div class="k">Vencidos</div>
+    <div class="v" style="color:var(--danger)">{{ total_vencidos }}</div><div class="f">exposição a autuação</div></div>
+  <div class="card p kpi"><div class="k">Vencendo em 30 dias</div>
+    <div class="v" style="color:var(--crit)">{{ total_criticos }}</div><div class="f">ação imediata</div></div>
+  <div class="card p kpi"><div class="k">Nunca enviados</div>
+    <div class="v" style="color:var(--muted)">{{ total_pendentes }}</div><div class="f">cobrança às casas</div></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <div class="ch"><div><h2>Conformidade por casa</h2></div></div>
+  <div class="cb">
+    {% for r in resumos %}
+    <div class="unit-progress">
+      <div class="unit-progress-name">
+        <a href="{% url 'dashboard:checklist' r.unidade.codigo %}">{{ r.unidade.nome }}</a></div>
+      <div class="bar" style="flex:1"><i style="width:{{ r.percentual }}%;background:{{ r.percentual|cor_percentual }}"></i></div>
+      <div class="unit-progress-value">{{ r.percentual }}%</div>
+      <div class="unit-progress-detail hint">
+        {{ r.acao_da_casa }} de {{ r.itens_da_casa }} p/ a casa</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <div class="ch"><div><h2>Próximos vencimentos</h2></div></div>
+  <div class="tw"><table>
+    <thead><tr><th>Casa</th><th>Documento</th><th>Vencimento</th><th>Prazo</th><th>Situação</th><th>Quem faz</th></tr></thead>
+    <tbody>{% for i in proximos %}
+      <tr><td><b>{{ i.unidade.nome }}</b></td><td>{{ i.tipo.nome }}</td>
+        <td class="mono">{{ i.vencimento|date:"d/m/Y" }}</td>
+        <td><b>{{ i.dias }} dias</b></td>
+        <td><span class="pill {{ i.status|classe_status }}">{{ i.status|rotulo_status }}</span></td>
+        <td class="hint">{{ i.tipo.get_responsavel_execucao_display }}</td></tr>
+    {% empty %}<tr><td colspan="6" class="hint">Nenhum vencimento próximo.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="ch"><div><h2>Matriz casa × requisito legal</h2>
+    <div class="hint">Clique em uma célula para enviar o documento pendente ou visualizar o documento entregue.</div></div></div>
+  <div class="cb tw">
+    <table class="hm"><thead><tr><th></th>
+      {% for t in tipos %}<th class="rot" title="{{ t.nome }}">{{ t.codigo }} · {{ t.nome|truncatechars:26 }}</th>{% endfor %}
+      <th class="matrix-spacer" aria-hidden="true"></th>
+      <th class="matrix-percent">%</th></tr></thead>
+      <tbody>{% for r in resumos %}
+        {% with linha=matriz|linha_matriz:r.unidade.pk %}
+        <tr><td class="u">{{ r.unidade.nome }}</td>
+          {% for t in tipos %}{% with celula=linha|item:t.pk %}{% with st=celula.status %}
+          <td>
+            {% if st == 'NAO_APLICAVEL' %}
+            <div class="cell {{ st|classe_status }}" style="background:#f1f5f2;color:#aab8af"
+              title="{{ r.unidade.nome }} — {{ t.nome }}: {{ st|rotulo_status }}">{{ st|simbolo_status }}</div>
+            {% elif celula.documento %}
+            <a class="cell matrix-link {{ st|classe_status }}" href="{% url 'compliance:detalhe_documento' celula.documento.uuid %}"
+              style="background:{% if st == 'VIGENTE' %}#157347{% elif st == 'AVENCER' %}#d3a115{% elif st == 'CRITICO' %}#e2680f{% elif st == 'VENCIDO' %}#b02a37{% elif st == 'EM_ANALISE' %}#2b8060{% else %}#cfd9d2;color:#53635a{% endif %}"
+              title="Visualizar {{ t.nome }} — {{ r.unidade.nome }}: {{ st|rotulo_status }}"
+              aria-label="Visualizar {{ t.nome }} de {{ r.unidade.nome }}">{{ st|simbolo_status }}</a>
+            {% else %}
+            <a class="cell matrix-link {{ st|classe_status }}" href="{% url 'compliance:enviar' r.unidade.codigo t.codigo %}"
+              style="background:#cfd9d2;color:#53635a"
+              title="Enviar {{ t.nome }} — {{ r.unidade.nome }}"
+              aria-label="Enviar {{ t.nome }} de {{ r.unidade.nome }}">{{ st|simbolo_status }}</a>
+            {% endif %}
+          </td>
+          {% endwith %}
+          {% endwith %}{% endfor %}
+          <td class="matrix-spacer" aria-hidden="true"></td>
+          <td class="matrix-percent"><b style="color:{{ r.percentual|cor_percentual }}">{{ r.percentual }}%</b></td></tr>
+        {% endwith %}
+      {% endfor %}</tbody></table>
+  </div>
+  <div class="matrix-legend" aria-label="Legenda da matriz de conformidade">
+    <span><i style="background:#157347">OK</i>Em dia</span>
+    <span><i style="background:#d3a115">!</i>A vencer</span>
+    <span><i style="background:#e2680f">!</i>Crítico (até 30 dias)</span>
+    <span><i style="background:#b02a37">X</i>Vencido</span>
+    <span><i style="background:#2b8060">~</i>Em análise</span>
+    <span><i style="background:#cfd9d2;color:#53635a">·</i>Não enviado</span>
+    <span><i style="background:#f1f5f2;color:#aab8af;border:1px solid #e2e9e4">−</i>Não aplicável</span>
+  </div>
+</div>
+{% endblock %}

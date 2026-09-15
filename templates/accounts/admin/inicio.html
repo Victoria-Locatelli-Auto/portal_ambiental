@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+{% block titulo %}Administração{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Administração do sistema</h1><div class="d">Cadastros e acessos do SIGA em uma área simples e integrada.</div></div>
+</header>
+
+<div class="grid admin-kpis">
+  <div class="card p kpi"><div class="k">Tipos documentais ativos</div><div class="v">{{ total_tipos }}</div><div class="f">Requisitos disponíveis nos checklists</div></div>
+  <div class="card p kpi"><div class="k">Usuários ativos</div><div class="v">{{ total_usuarios }}</div><div class="f">Pessoas com acesso ao SIGA</div></div>
+  <div class="card p kpi"><div class="k">Acessos desativados</div><div class="v">{{ total_inativos }}</div><div class="f">Cadastros preservados sem login</div></div>
+</div>
+
+<div class="admin-modules">
+  <a class="admin-module" href="{% url 'administracao:tipos' %}">
+    <span class="admin-module-icon">DOC</span>
+    <span><strong>Gestão de tipos documentais</strong><small>Adicionar, editar, desativar e reativar requisitos ambientais.</small></span>
+    <b aria-hidden="true">→</b>
+  </a>
+  <a class="admin-module" href="{% url 'administracao:usuarios' %}">
+    <span class="admin-module-icon">USR</span>
+    <span><strong>Acessos e usuários</strong><small>Cadastrar pessoas, definir perfis, unidades e permissões de acesso.</small></span>
+    <b aria-hidden="true">→</b>
+  </a>
+  <a class="admin-module" href="{% url 'administracao:modelos_email' %}">
+    <span class="admin-module-icon">MAIL</span>
+    <span><strong>Notificações por e-mail</strong><small>Editar assuntos e mensagens automáticas e testar a integração.</small></span>
+    <b aria-hidden="true">→</b>
+  </a>
+</div>
+{% endblock %}

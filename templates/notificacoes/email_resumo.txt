@@ -1,0 +1,12 @@
+RESUMO GERENCIAL DE CONFORMIDADE AMBIENTAL - SIGA / MCM
+
+{% for r in resumos %}{{ r.unidade.nome }}
+  Conformidade ....: {{ r.percentual }}%
+  Nao enviados ....: {{ r.pendente }}
+  Vencidos ........: {{ r.vencido }}
+  Vencendo em 30d .: {{ r.critico }}
+  Em analise ......: {{ r.em_analise }}
+  Acao da casa ....: {{ r.acao_da_casa }} de {{ r.itens_da_casa }} itens
+
+{% endfor %}--
+SIGA - Sistema Integrado de Gestao Ambiental MCM

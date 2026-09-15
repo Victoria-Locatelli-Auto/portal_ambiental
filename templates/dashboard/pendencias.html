@@ -1,0 +1,41 @@
+{% extends "layout/base.html" %}{% load siga_tags %}
+{% block titulo %}Relatórios{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Relatórios</h1></div>
+  <a class="btn" href="?{{ export_query }}">Exportar CSV</a>
+</header>
+<form method="get" class="card p report-filters">
+  {% for campo in formulario %}
+  <div class="report-filter-field">
+    <label class="lbl" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+    {{ campo }}
+    {% for erro in campo.errors %}<div class="field-error">{{ erro }}</div>{% endfor %}
+  </div>
+  {% endfor %}
+  <div class="report-filter-actions">
+    <button class="btn" type="submit">Filtrar</button>
+    <a class="btn sec" href="{% url 'dashboard:pendencias' %}">Limpar</a>
+  </div>
+</form>
+<div class="card"><div class="ch"><h2>{{ itens|length }} pendência(s)</h2>
+  <span class="hint">Ordenado por criticidade legal</span></div>
+<div class="tw"><table>
+  <thead><tr><th>#</th><th>Situação</th><th>Casa</th><th>Documento exigido</th><th>Base legal</th>
+    <th>Vencimento</th><th>Prazo</th><th>Quem faz</th><th>Responsável</th><th>Ações</th></tr></thead>
+  <tbody>{% for i in itens %}
+    <tr><td class="hint">{{ forloop.counter }}</td>
+      <td><span class="pill {{ i.status|classe_status }}">{{ i.status|rotulo_status }}</span></td>
+      <td><b>{{ i.unidade.nome }}</b><div class="hint mono">{{ i.unidade.cnpj }}</div></td>
+      <td>{{ i.tipo.nome }}<div class="hint">{{ i.tipo.get_tema_display }}</div></td>
+      <td class="hint" style="max-width:230px">{{ i.tipo.base_legal|truncatechars:90 }}</td>
+      <td class="mono">{% if i.vencimento %}{{ i.vencimento|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+      <td>{% if i.dias is None %}<span class="hint">nunca enviado</span>
+        {% else %}<b {% if i.dias < 0 %}style="color:var(--danger)"{% elif i.dias <= 30 %}style="color:var(--crit)"{% endif %}>{{ i.dias }}d</b>{% endif %}</td>
+      <td class="hint">{{ i.tipo.get_responsavel_execucao_display }}</td>
+      <td>{{ i.unidade.responsavel_nome|default:"a designar" }}
+        <div class="hint mono">{{ i.unidade.responsavel_email }}</div></td>
+      <td><a class="btn sm sec" href="{% url 'compliance:enviar' i.unidade.codigo i.tipo.codigo %}">Ver</a></td></tr>
+  {% empty %}<tr><td colspan="10" class="empty-state">Nenhuma pendência encontrada com esses filtros.</td></tr>
+  {% endfor %}</tbody></table></div></div>
+{% endblock %}

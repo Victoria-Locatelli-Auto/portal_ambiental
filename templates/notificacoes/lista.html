@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+{% block titulo %}Notificações{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Notificações</h1><div class="d">Alertas de vencimento e cobranças relacionados às casas que você acompanha.</div></div>
+  {% if notificacoes_nao_lidas %}
+  <form method="post" action="{% url 'notificacoes:marcar_todas_lidas' %}">{% csrf_token %}
+    <button class="btn sec" type="submit">Marcar todas como lidas</button>
+  </form>
+  {% endif %}
+</header>
+
+<div class="card notification-list">
+  {% for notificacao in notificacoes %}
+  <article class="notification-item {% if not notificacao.lida %}unread{% endif %}">
+    <div class="notification-icon {% if notificacao.tipo == 'VENCIDO' %}danger{% elif notificacao.tipo == 'ALERTA' %}warning{% endif %}" aria-hidden="true">{% if notificacao.tipo == 'VENCIDO' %}!{% elif notificacao.tipo == 'ALERTA' %}⏱{% else %}●{% endif %}</div>
+    <div class="notification-content">
+      <div class="notification-heading">
+        <b>{{ notificacao.titulo }}</b>
+        {% if not notificacao.lida %}<span class="pill p-info">Nova</span>{% endif %}
+      </div>
+      <div class="hint">{{ notificacao.get_tipo_display }}{% if notificacao.unidade %} · {{ notificacao.unidade.nome }}{% endif %} · {{ notificacao.criado_em|date:"d/m/Y H:i" }}</div>
+      <p>{{ notificacao.mensagem|truncatechars:240|linebreaksbr }}</p>
+    </div>
+    <a class="btn sm {% if notificacao.lida %}sec{% endif %}" href="{% url 'notificacoes:abrir' notificacao.uuid %}">Abrir</a>
+  </article>
+  {% empty %}
+  <div class="empty-state">Você ainda não possui notificações.</div>
+  {% endfor %}
+</div>
+{% endblock %}

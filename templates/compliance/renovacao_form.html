@@ -1,0 +1,41 @@
+{% extends "layout/base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>{{ titulo }}</h1><div class="d">{{ unidade.nome }} · reutilize documentos do acervo ou inclua novos anexos externos.</div></div>
+  <a class="btn sec" href="{% url 'compliance:renovacoes' %}">← Voltar</a>
+</header>
+
+<div class="note"><b>Casa:</b> {{ unidade.nome }} · <span class="mono">{{ unidade.cnpj }}</span><br>
+  Os documentos disponíveis abaixo pertencem exclusivamente ao acervo desta unidade.</div>
+
+<form method="post" enctype="multipart/form-data" class="card admin-form renewal-form">{% csrf_token %}
+  {% if formulario.non_field_errors %}<div class="msg error">{{ formulario.non_field_errors }}</div>{% endif %}
+  <div class="admin-form-grid">
+    {% for campo in formulario %}
+    <div class="admin-field {% if campo.name == 'documentos' or campo.name == 'anexos_externos' or campo.name == 'observacao' %}wide{% endif %}">
+      <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} <span>*</span>{% endif %}</label>
+      {{ campo }}
+      {% if campo.help_text %}<div class="hint">{{ campo.help_text }}</div>{% endif %}
+      {% for erro in campo.errors %}<div class="field-error">{{ erro }}</div>{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% if processo.anexos_externos.all %}
+  <div class="admin-field wide">
+    <label>Anexos externos já incluídos</label>
+    <div class="renewal-files">
+      {% for anexo in processo.anexos_externos.all %}
+      <a href="{% url 'compliance:renovacao_anexo_baixar' anexo.uuid %}">
+        {{ anexo }} <span>Baixar</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  <div class="admin-form-footer">
+    <a class="btn sec" href="{% url 'compliance:renovacoes' %}">Cancelar</a>
+    <button class="btn" type="submit">Salvar processo</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "layout/base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<div class="confirm-wrap">
+  <div class="card confirm-card">
+    <div class="confirm-icon">!</div>
+    <h1>{{ titulo }}</h1>
+    <p><b>{{ objeto }}</b></p>
+    <p class="hint">{{ aviso }}</p>
+    <form method="post">{% csrf_token %}
+      <a class="btn sec" href="{% url voltar %}">Cancelar</a>
+      <button class="btn" type="submit">{{ acao }}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

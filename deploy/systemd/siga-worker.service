@@ -1,0 +1,17 @@
+[Unit]
+Description=SIGA - processamento de notificacoes
+After=network.target mysql.service redis-server.service
+Wants=mysql.service redis-server.service
+
+[Service]
+Type=simple
+User=siga
+Group=www-data
+WorkingDirectory=/opt/siga
+EnvironmentFile=/etc/siga/siga.env
+ExecStart=/opt/siga/.venv/bin/celery -A config worker --loglevel=INFO
+Restart=on-failure
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

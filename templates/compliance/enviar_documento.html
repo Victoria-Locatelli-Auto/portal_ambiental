@@ -1,0 +1,73 @@
+{% extends "layout/base.html" %}
+{% block titulo %}{% if atual %}Atualizar documento{% else %}Enviar documento{% endif %}{% endblock %}
+{% block conteudo %}
+<header class="pg"><div><h1>{% if atual %}Atualizar documento{% else %}Enviar documento{% endif %}</h1>
+  <div class="d">{{ tipo.nome }} — {{ unidade.nome }}</div></div>
+  <a class="btn sec" href="{% url 'dashboard:checklist' unidade.codigo %}">Voltar ao checklist</a>
+</header>
+
+<div class="note"><b>{{ unidade.nome }}</b> · <span class="mono">{{ unidade.cnpj }}</span><br>
+  <b>O que fazer:</b> {{ tipo.instrucao }}<br>
+  <span class="hint">Base legal: {{ tipo.base_legal }}</span></div>
+
+{% if atual %}<div class="note" style="background:#fdf8e9;border-color:var(--warn)">
+  <b>Já existe um registro deste item:</b> {{ atual.identificacao }}
+  (emissão {{ atual.data_emissao|date:"d/m/Y" }}{% if atual.data_vencimento %},
+  validade {{ atual.data_vencimento|date:"d/m/Y" }}{% endif %}).
+  O envio abaixo cria a versão {{ atual.versao|add:1 }} e preserva o histórico.</div>{% endif %}
+
+<div class="card p" style="max-width:760px">
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    {% for campo in formulario %}
+      {% if campo.name == "sem_data_validade" %}
+      {% elif campo.name == "data_vencimento" %}
+      <div class="validade-fieldset">
+        <div class="validade-date">
+          <label class="lbl" for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} <span class="required-mark">*</span>{% endif %}</label>
+          {{ campo }}
+        </div>
+        <label class="validade-check" for="{{ formulario.sem_data_validade.id_for_label }}">
+          {{ formulario.sem_data_validade }}
+          <span>Sem data de validade</span>
+        </label>
+      </div>
+      {% if campo.help_text %}<div class="hint" id="validade-help">{{ campo.help_text }}</div>{% endif %}
+      {% for erro in campo.errors %}<div class="hint" style="color:var(--danger)">{{ erro }}</div>{% endfor %}
+      {% for erro in formulario.sem_data_validade.errors %}<div class="hint" style="color:var(--danger)">{{ erro }}</div>{% endfor %}
+      {% else %}
+      <label class="lbl" for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} <span class="required-mark">*</span>{% endif %}</label>
+      {{ campo }}
+      {% if campo.help_text %}<div class="hint">{{ campo.help_text }}</div>{% endif %}
+      {% for erro in campo.errors %}<div class="hint" style="color:var(--danger)">{{ erro }}</div>{% endfor %}
+      {% endif %}
+    {% endfor %}
+    <div class="hint" style="margin-top:14px">
+      {% if tipo.periodicidade_meses %}Validade prevista deste tipo:
+        <b>{{ tipo.periodicidade_meses }} meses</b> — o vencimento foi calculado automaticamente.
+      {% else %}Este item não tem prazo de validade fixo.{% endif %}</div>
+    <div style="margin-top:20px;display:flex;gap:9px">
+      <button class="btn" type="submit">Salvar e marcar como atendido</button>
+      <a class="btn sec" href="{% url 'dashboard:checklist' unidade.codigo %}">Cancelar</a></div>
+  </form>
+</div>
+<script>
+  (() => {
+    const checkbox = document.getElementById('id_sem_data_validade');
+    const vencimento = document.getElementById('id_data_vencimento');
+    const ajuda = document.getElementById('validade-help');
+    if (!checkbox || !vencimento) return;
+
+    const atualizarVencimento = () => {
+      vencimento.disabled = checkbox.checked;
+      if (checkbox.checked) vencimento.value = '';
+      vencimento.closest('.validade-date').classList.toggle('disabled', checkbox.checked);
+      if (ajuda) ajuda.textContent = checkbox.checked
+        ? 'O documento será salvo sem vencimento e não gerará alertas de validade.'
+        : 'Calculada automaticamente pela validade do tipo. Ajuste se necessário.';
+    };
+
+    checkbox.addEventListener('change', atualizarVencimento);
+    atualizarVencimento();
+  })();
+</script>
+{% endblock %}
