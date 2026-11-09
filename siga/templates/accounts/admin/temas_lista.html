@@ -1,0 +1,32 @@
+{% extends "layout/base.html" %}
+{% block titulo %}Temas legais{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Temas legais</h1><div class="d">Categorias utilizadas para organizar os tipos documentais e relatórios.</div></div>
+  <a class="btn" href="{% url 'administracao:tema_criar' %}">+ Novo tema legal</a>
+</header>
+
+<form method="get" class="admin-search">
+  <input class="inp" type="search" name="q" value="{{ busca }}" placeholder="Buscar por código ou nome">
+  <button class="btn sec" type="submit">Buscar</button>
+</form>
+
+<div class="card"><div class="tw"><table>
+  <thead><tr><th>Ordem</th><th>Código</th><th>Tema legal</th><th>Tipos vinculados</th><th>Status</th><th>Ações</th></tr></thead>
+  <tbody>
+  {% for tema in temas %}
+    <tr class="{% if not tema.ativo %}row-inactive{% endif %}">
+      <td>{{ tema.ordem }}</td>
+      <td class="mono"><b>{{ tema.codigo }}</b></td>
+      <td><b>{{ tema.nome }}</b></td>
+      <td>{{ tema.total_tipos }}</td>
+      <td><span class="pill {% if tema.ativo %}p-ok{% else %}p-pend{% endif %}">{% if tema.ativo %}Ativo{% else %}Inativo{% endif %}</span></td>
+      <td class="admin-actions">
+        <a class="btn sec sm" href="{% url 'administracao:tema_editar' tema.pk %}">Editar</a>
+        <a class="btn sec sm" href="{% url 'administracao:tema_alternar' tema.pk %}">{% if tema.ativo %}Desativar{% else %}Reativar{% endif %}</a>
+      </td>
+    </tr>
+  {% empty %}<tr><td colspan="6" class="empty-state">Nenhum tema legal encontrado.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

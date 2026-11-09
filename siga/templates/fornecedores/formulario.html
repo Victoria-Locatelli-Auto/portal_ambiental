@@ -1,0 +1,46 @@
+{% extends "layout/base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>{{ titulo }}</h1><div class="d">Informações cadastrais e contato do fornecedor.</div></div>
+  {% if fornecedor %}<a class="btn sec" href="{% url 'fornecedores:detalhe' fornecedor.uuid %}">← Voltar</a>{% else %}<a class="btn sec" href="{% url 'fornecedores:lista' %}">← Voltar</a>{% endif %}
+</header>
+<form method="post" enctype="multipart/form-data" class="card admin-form">{% csrf_token %}
+  {% if formulario.non_field_errors %}<div class="msg error">{{ formulario.non_field_errors }}</div>{% endif %}
+  <div class="admin-form-grid">
+    {% for campo in formulario %}
+      <div class="admin-field {% if campo.name == 'observacoes' or campo.name == 'cidades_atendidas' or campo.name == 'anexo_contrato' %}wide{% endif %} {% if campo.field.widget.input_type == 'checkbox' and campo.name != 'cidades_atendidas' %}check{% endif %}">
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} <span>*</span>{% endif %}</label>
+        {{ campo }}
+        {% if campo.help_text %}<div class="hint">{{ campo.help_text }}</div>{% endif %}
+        {% for erro in campo.errors %}<div class="field-error">{{ erro }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="admin-form-footer">
+    {% if fornecedor %}<a class="btn sec" href="{% url 'fornecedores:detalhe' fornecedor.uuid %}">Cancelar</a>{% else %}<a class="btn sec" href="{% url 'fornecedores:lista' %}">Cancelar</a>{% endif %}
+    <button class="btn" type="submit">Salvar fornecedor</button>
+  </div>
+</form>
+<script>
+  document.querySelectorAll('.checkbox-dropdown').forEach((seletor) => {
+    const resumo = seletor.querySelector('summary');
+    const caixas = [...seletor.querySelectorAll('input[type="checkbox"]')];
+    const atualizar = () => {
+      const marcadas = caixas.filter((caixa) => caixa.checked);
+      resumo.textContent = marcadas.length
+        ? marcadas.map((caixa) => caixa.nextElementSibling.textContent.trim()).join(', ')
+        : resumo.dataset.empty;
+      resumo.title = resumo.textContent;
+    };
+    caixas.forEach((caixa) => caixa.addEventListener('change', atualizar));
+    atualizar();
+  });
+  document.addEventListener('pointerdown', (evento) => {
+    document.querySelectorAll('.checkbox-dropdown[open]').forEach((seletor) => {
+      if (!seletor.contains(evento.target)) seletor.removeAttribute('open');
+    });
+  }, true);
+</script>
+{% endblock %}
+

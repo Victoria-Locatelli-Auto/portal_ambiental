@@ -1,0 +1,28 @@
+{% extends "layout/base.html" %}{% load siga_tags %}
+{% block titulo %}Gestão documental{% endblock %}
+{% block conteudo %}
+<header class="pg"><div><h1>Gestão documental</h1></div></header>
+<form method="get" class="card p filter-form">
+  {% for campo in formulario %}<div><label class="lbl" for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}</div>{% endfor %}
+  <div class="filter-actions">
+    <button class="btn" type="submit">Filtrar</button>
+    <a class="btn sec" href="{% url 'compliance:documentos' %}">Limpar</a>
+  </div>
+</form>
+<div class="card"><div class="ch"><h2>{{ documentos|length }} documento(s)</h2></div>
+<div class="tw"><table>
+  <thead><tr><th>Casa</th><th>Tipo</th><th>Documento</th><th>Emissão</th><th>Validade</th>
+    <th>Situação</th><th>Validação</th><th></th></tr></thead>
+  <tbody>{% for d in documentos %}
+    <tr><td><b>{{ d.unidade.nome }}</b></td>
+      <td>{{ d.tipo.nome }}<div class="hint">{{ d.tipo.codigo }}</div></td>
+      <td>{{ d.identificacao }}{% if d.fornecedor %}<div class="hint">Fornecedor: {{ d.fornecedor }}</div>{% endif %}{% if d.arquivo %}<div class="hint mono">{{ d.arquivo.name }}</div>{% endif %}</td>
+      <td class="mono">{{ d.data_emissao|date:"d/m/Y" }}</td>
+      <td class="mono">{{ d.data_vencimento|date:"d/m/Y"|default:"—" }}</td>
+      <td><span class="pill {{ d.status|classe_status }}">{{ d.status|rotulo_status }}</span></td>
+      <td>{% if d.validado_por %}<span class="hint">✓ {{ d.validado_por.nome_exibicao }}</span>
+        {% else %}<span class="pill p-info">aguardando STX</span>{% endif %}</td>
+      <td><a class="btn sm sec" href="{% url 'compliance:detalhe_documento' d.uuid %}">Ver histórico</a></td></tr>
+  {% empty %}<tr><td colspan="8" class="hint">Nenhum documento com esses filtros.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

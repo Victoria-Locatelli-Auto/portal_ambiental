@@ -1,0 +1,89 @@
+{% extends "layout/base.html" %}{% load siga_tags %}
+{% block titulo %}Checklist — {{ unidade.nome }}{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Checklist da casa — {{ unidade.nome }}</h1></div>
+  <div class="no-print">
+    <a class="btn sec" href="{% url 'dashboard:checklist_csv' unidade.codigo %}">Exportar CSV</a>
+    <button class="btn sec" onclick="window.print()">Imprimir</button></div>
+</header>
+
+<div class="card p" style="margin-bottom:16px">
+  <div style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px">
+      <div style="font-size:17px;font-weight:700">{{ unidade.nome }}</div>
+      <div class="hint mono">{{ unidade.cnpj }}</div>
+      <div class="hint" style="margin-top:5px">{{ unidade.endereco }}</div>
+      <div style="margin-top:9px;font-size:12.8px"><b>Coordenadora / responsável:</b>
+        {% if unidade.responsavel_nome %}{{ unidade.responsavel_nome }}
+        {% else %}<span class="pill p-venc">a definir</span>{% endif %}
+        · <span class="mono">{{ unidade.responsavel_email }}</span></div>
+      <div style="font-size:12.8px"><b>Órgão licenciador:</b> {{ unidade.orgao_estadual }} · {{ unidade.orgao_municipal }}</div>
+      <div style="font-size:12.8px"><b>Última visita técnica:</b>
+        {% if unidade.ultima_visita_tecnica %}{{ unidade.ultima_visita_tecnica|date:"d/m/Y" }}
+        {% else %}<b style="color:var(--danger)">nunca visitada</b>{% endif %}</div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="text-align:center;background:#fdeeef;border-radius:10px;padding:12px 18px;min-width:118px">
+        <div style="font-size:31px;font-weight:700;color:var(--danger)">{{ resumo.acao_da_casa }}</div>
+        <div style="font-size:11px;font-weight:700;color:#8f1f2a;text-transform:uppercase">Ação<br>imediata</div></div>
+      <div style="text-align:center;background:var(--brand-l);border-radius:10px;padding:12px 18px;min-width:118px">
+        <div style="font-size:31px;font-weight:700;color:var(--brand)">{{ resumo.itens_da_casa }}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase">Itens da<br>coordenadora</div></div>
+      <div style="text-align:center;background:#eef6f1;border-radius:10px;padding:12px 18px;min-width:118px">
+        <div style="font-size:31px;font-weight:700;color:{{ resumo.percentual_checklist|cor_percentual }}">{{ resumo.percentual_checklist }}%</div>
+        <div style="font-size:11px;font-weight:700;color:#0f5132;text-transform:uppercase">Checklist<br>concluído</div></div>
+    </div>
+  </div>
+  {% if unidade.diagnostico %}
+  <div class="note" style="margin:14px 0 0"><b>Diagnóstico da última visita técnica:</b> {{ unidade.diagnostico }}</div>
+  {% endif %}
+</div>
+
+{% for titulo, ajuda, itens, status in grupos %}{% if itens %}
+<div class="card" style="margin-bottom:14px;border-left:4px solid {% if status == 'PENDENTE' or status == 'VENCIDO' %}#b02a37{% elif status == 'CRITICO' %}#e2680f{% elif status == 'AVENCER' %}#d3a115{% elif status == 'EM_ANALISE' %}#2b8060{% else %}#157347{% endif %}">
+  <div class="ch"><div><h2>{{ forloop.counter }}. {{ titulo }} · {{ itens|length }}</h2>
+    {% if ajuda %}<div class="hint">{{ ajuda }}</div>{% endif %}</div></div>
+  <div class="tw"><table>
+    <thead><tr><th style="width:4%">✓</th><th style="width:23%">Documento</th>
+      <th style="width:32%">O que a coordenadora precisa fazer</th><th style="width:10%">Prazo</th>
+      <th style="width:11%">Apoio</th><th style="width:12%">Base legal</th>
+      <th style="width:8%;text-align:center" class="no-print">Enviar</th></tr></thead>
+    <tbody>{% for i in itens %}
+      <tr><td style="text-align:center">{% if i.atendido %}<span class="done">✓</span>{% else %}☐{% endif %}</td>
+        <td><b>{{ i.tipo.nome }}</b><div class="hint">{{ i.tipo.codigo }} · {{ i.tipo.tema_rotulo }}</div></td>
+        <td>{{ i.tipo.instrucao }}
+          {% if i.documento.observacao %}<div class="hint" style="color:var(--crit);margin-top:4px">⚠ {{ i.documento.observacao }}</div>{% endif %}</td>
+        <td class="mono">{% if i.vencimento %}{{ i.vencimento|date:"d/m/Y" }}
+          <div class="hint" {% if i.dias < 0 %}style="color:var(--danger)"{% elif i.dias <= 30 %}style="color:var(--crit)"{% endif %}>
+          {% if i.dias < 0 %}venceu há {{ i.dias|cut:"-" }}d{% else %}{{ i.dias }} dias{% endif %}</div>
+          {% else %}—{% endif %}</td>
+        <td><span class="pill {% if 'CASA' in i.tipo.responsaveis_execucao %}p-warn{% else %}p-pend{% endif %}">{{ i.tipo.get_responsavel_execucao_display }}</span></td>
+        <td class="hint">{{ i.tipo.base_legal|truncatechars:44 }}</td>
+        <td style="text-align:center" class="no-print">
+          <a class="ico {% if i.atendido %}ok{% endif %}"
+             href="{% url 'compliance:enviar' unidade.codigo i.tipo.codigo %}"
+             title="{% if i.atendido %}Enviar nova versão{% else %}Subir documento e marcar como atendido{% endif %}">
+             {% if i.atendido %}&#8635;{% else %}&#8593;{% endif %}</a></td></tr>
+    {% endfor %}</tbody></table></div>
+</div>
+{% endif %}{% endfor %}
+
+<div class="card" style="border-left:4px solid #2b8060">
+  <div class="ch"><div><h2>Conduzido pela STX Engenharia · {{ itens_stx|length }}</h2>
+    <div class="hint">A coordenadora não precisa produzir estes itens — apenas fornecer as informações e arquivar o resultado.</div></div></div>
+  <div class="tw"><table>
+    <thead><tr><th style="width:30%">Item</th><th style="width:40%">Participação da casa</th>
+      <th style="width:12%">Prazo</th><th style="width:11%">Situação</th>
+      <th style="width:7%;text-align:center" class="no-print">Anexar</th></tr></thead>
+    <tbody>{% for i in itens_stx %}
+      <tr><td><b>{{ i.tipo.nome }}</b><div class="hint">{{ i.tipo.codigo }}</div></td>
+        <td>{{ i.tipo.instrucao }}</td>
+        <td class="mono">{% if i.vencimento %}{{ i.vencimento|date:"d/m/Y" }}{% else %}conforme cronograma{% endif %}</td>
+        <td><span class="pill {{ i.status|classe_status }}">{{ i.status|rotulo_status }}</span></td>
+        <td style="text-align:center" class="no-print">
+          <a class="ico {% if i.atendido %}ok{% endif %}" href="{% url 'compliance:enviar' unidade.codigo i.tipo.codigo %}">&#8593;</a></td></tr>
+    {% endfor %}</tbody></table></div>
+</div>
+
+{% endblock %}

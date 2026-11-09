@@ -1,0 +1,26 @@
+{% extends "layout/base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>{{ titulo }}</h1><div class="d">Fornecedor: {{ fornecedor }}</div></div>
+  <a class="btn sec" href="{% url 'fornecedores:detalhe' fornecedor.uuid %}">← Voltar</a>
+</header>
+<form method="post" enctype="multipart/form-data" class="card admin-form">{% csrf_token %}
+  {% if formulario.non_field_errors %}<div class="msg error">{{ formulario.non_field_errors }}</div>{% endif %}
+  <div class="admin-form-grid">
+    {% for campo in formulario %}
+      <div class="admin-field {% if campo.name == 'objeto' or campo.name == 'observacoes' or campo.name == 'arquivo' %}wide{% endif %}">
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %} <span>*</span>{% endif %}</label>
+        {{ campo }}
+        {% if campo.help_text %}<div class="hint">{{ campo.help_text }}</div>{% endif %}
+        {% for erro in campo.errors %}<div class="field-error">{{ erro }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="admin-form-footer">
+    <a class="btn sec" href="{% url 'fornecedores:detalhe' fornecedor.uuid %}">Cancelar</a>
+    <button class="btn" type="submit">Salvar contrato</button>
+  </div>
+</form>
+{% endblock %}
+

@@ -1,0 +1,78 @@
+{% load siga_tags %}<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}SIGA{% endblock %} · SIGA · MCM</title>
+  {% load static %}<link rel="stylesheet" href="{% static 'css/siga.css' %}?v=20261013-matriz-espacamento">
+</head>
+<body>
+<div class="mobile-bar">
+  <button class="mobile-menu-button" type="button" aria-controls="app-sidebar" aria-expanded="false">
+    <span aria-hidden="true">☰</span> Menu
+  </button>
+  <a class="mobile-brand" href="{% url 'dashboard:painel' %}">
+    <img src="{% static 'img/mcm-logo.png' %}" alt=""><b>SIGA</b>
+  </a>
+</div>
+<button class="sidebar-overlay" type="button" aria-label="Fechar menu"></button>
+<div class="app">
+  <aside id="app-sidebar">
+    <div class="logo">
+      <img class="app-logo-mark" src="{% static 'img/mcm-logo.png' %}" alt="MCM">
+      <div><b>SIGA</b><span>MCM · Caminhões e Ônibus</span></div>
+    </div>
+    <nav>
+      <div class="ngroup">Visão geral</div>
+      <a href="{% url 'dashboard:painel' %}" class="{% if secao == 'painel' %}on{% endif %}">Painel principal</a>
+      <a href="{% url 'dashboard:checklist_geral' %}" class="{% if secao == 'checklist' %}on{% endif %}">Checklist por casa</a>
+      <a href="{% url 'notificacoes:lista' %}" class="nav-notifications {% if secao == 'notificacoes' %}on{% endif %}">Notificações{% if notificacoes_nao_lidas %}<span>{{ notificacoes_nao_lidas }}</span>{% endif %}</a>
+      <div class="ngroup">Conformidade legal</div>
+      <a href="{% url 'compliance:documentos' %}" class="{% if secao == 'documentos' %}on{% endif %}">Gestão documental</a>
+      <a href="{% url 'compliance:renovacoes' %}" class="{% if secao == 'renovacoes' %}on{% endif %}">Processo de Emissão/ Renovação</a>
+      <a href="{% url 'dashboard:pendencias' %}" class="{% if secao == 'pendencias' %}on{% endif %}">Relatórios</a>
+      {% if user.perfil == 'ADMIN' %}
+      <div class="ngroup">Sistema</div>
+      <a href="{% url 'administracao:inicio' %}" class="{% if secao == 'administracao' %}on{% endif %}">Administração</a>
+      <div class="subnav">
+        <a href="{% url 'fornecedores:lista' %}" class="{% if secao == 'fornecedores' %}on{% endif %}">Cadastro de fornecedores</a>
+        <a href="{% url 'administracao:temas' %}" class="{% if secao == 'temas_legais' %}on{% endif %}">Temas legais</a>
+        <a href="{% url 'administracao:tipos' %}" class="{% if secao == 'tipos_documento' %}on{% endif %}">Tipos documentais</a>
+        <a href="{% url 'administracao:usuarios' %}" class="{% if secao == 'usuarios' %}on{% endif %}">Acessos e usuários</a>
+        <a href="{% url 'administracao:modelos_email' %}" class="{% if secao == 'modelos_email' %}on{% endif %}">Textos dos e-mails</a>
+      </div>
+      {% endif %}
+    </nav>
+    <div class="who">
+      <b>{{ user.nome_exibicao }}</b>
+      <span style="color:#91b5a1">{{ user.get_perfil_display }}{% if user.unidade %} · {{ user.unidade.nome }}{% endif %}</span>
+      <form method="post" action="{% url 'logout' %}" style="margin-top:9px">{% csrf_token %}
+        <button class="btn sec sm" style="width:100%">Sair</button></form>
+    </div>
+  </aside>
+  <main>
+    {% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+    {% block conteudo %}{% endblock %}
+  </main>
+</div>
+<script>
+  (() => {
+    const botao = document.querySelector('.mobile-menu-button');
+    const fundo = document.querySelector('.sidebar-overlay');
+    const fechar = () => {
+      document.body.classList.remove('menu-open');
+      botao?.setAttribute('aria-expanded', 'false');
+    };
+    botao?.addEventListener('click', () => {
+      const aberto = document.body.classList.toggle('menu-open');
+      botao.setAttribute('aria-expanded', String(aberto));
+    });
+    fundo?.addEventListener('click', fechar);
+    document.querySelectorAll('#app-sidebar a').forEach((link) => link.addEventListener('click', fechar));
+    document.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') fechar();
+    });
+  })();
+</script>
+</body>
+</html>

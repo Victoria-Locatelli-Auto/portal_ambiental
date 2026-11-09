@@ -1,0 +1,58 @@
+{% extends "layout/base.html" %}{% load humanize %}
+{% block titulo %}{{ fornecedor }}{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>{{ fornecedor }}</h1><div class="d">{{ fornecedor.servico_fornecido }}</div></div>
+  <div class="admin-actions">
+    <a class="btn sec" href="{% url 'fornecedores:lista' %}">← Voltar</a>
+    <a class="btn sec" href="{% url 'fornecedores:editar' fornecedor.uuid %}">Editar</a>
+    <a class="btn" href="{% url 'fornecedores:contrato_criar' fornecedor.uuid %}">+ Cadastrar contrato</a>
+  </div>
+</header>
+
+<div class="grid fornecedor-summary">
+  <section class="card p">
+    <h2>Dados cadastrais</h2>
+    <dl class="supplier-data">
+      <div><dt>Razão social</dt><dd>{{ fornecedor.razao_social }}</dd></div>
+      <div><dt>Nome fantasia</dt><dd>{{ fornecedor.nome_fantasia|default:"—" }}</dd></div>
+      <div><dt>CNPJ/CPF</dt><dd>{{ fornecedor.cnpj_cpf }}</dd></div>
+      <div><dt>Cidades atendidas</dt><dd>{% for unidade in fornecedor.cidades_atendidas.all %}{{ unidade.municipio }}/{{ unidade.uf }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd></div>
+      <div><dt>Status</dt><dd><span class="pill {% if fornecedor.ativo %}p-ok{% else %}p-pend{% endif %}">{% if fornecedor.ativo %}Ativo{% else %}Inativo{% endif %}</span></dd></div>
+    </dl>
+  </section>
+  <section class="card p">
+    <h2>Contato</h2>
+    <dl class="supplier-data">
+      <div><dt>Responsável</dt><dd>{{ fornecedor.responsavel|default:"—" }}</dd></div>
+      <div><dt>E-mail</dt><dd>{{ fornecedor.email|default:"—" }}</dd></div>
+      <div><dt>Telefone</dt><dd>{{ fornecedor.telefone|default:"—" }}</dd></div>
+      <div><dt>Endereço</dt><dd>{{ fornecedor.endereco|default:"—" }}</dd></div>
+      <div><dt>Anexo inicial</dt><dd>{% if fornecedor.anexo_contrato %}<a href="{{ fornecedor.anexo_contrato.url }}" target="_blank" rel="noopener">Abrir contrato</a>{% else %}—{% endif %}</dd></div>
+    </dl>
+  </section>
+</div>
+{% if fornecedor.observacoes %}<div class="card p supplier-note"><h2>Observações</h2><p>{{ fornecedor.observacoes|linebreaksbr }}</p></div>{% endif %}
+
+<header class="pg contracts-header"><div><h2>Contratos</h2><div class="d">Histórico contratual deste fornecedor.</div></div></header>
+<div class="card"><div class="tw"><table>
+  <thead><tr><th>Número</th><th>Objeto</th><th>Vigência</th><th>Valor</th><th>Situação</th><th>Arquivo</th><th>Ações</th></tr></thead>
+  <tbody>
+  {% for contrato in contratos %}
+    <tr>
+      <td><b>{{ contrato.numero }}</b></td>
+      <td>{{ contrato.objeto|truncatechars:90 }}</td>
+      <td>{{ contrato.data_inicio|date:"d/m/Y" }} a {{ contrato.data_fim|date:"d/m/Y" }}{% if contrato.vencido %}<div class="hint">Vigência encerrada</div>{% endif %}</td>
+      <td>{% if contrato.valor is not None %}R$ {{ contrato.valor|floatformat:2|intcomma }}{% else %}—{% endif %}</td>
+      <td><span class="pill {% if contrato.situacao == 'VIGENTE' and not contrato.vencido %}p-ok{% else %}p-pend{% endif %}">{{ contrato.get_situacao_display }}</span></td>
+      <td>{% if contrato.arquivo %}<a href="{{ contrato.arquivo.url }}" target="_blank" rel="noopener">Abrir anexo</a>{% else %}Sem anexo{% endif %}</td>
+      <td><a class="btn sec sm" href="{% url 'fornecedores:contrato_editar' fornecedor.uuid contrato.uuid %}">Editar</a></td>
+    </tr>
+  {% empty %}<tr><td colspan="7" class="empty-state">Nenhum contrato cadastrado para este fornecedor.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+
+<form method="post" action="{% url 'fornecedores:alternar' fornecedor.uuid %}" class="supplier-status-action">{% csrf_token %}
+  <button class="btn sec" type="submit">{% if fornecedor.ativo %}Desativar fornecedor{% else %}Reativar fornecedor{% endif %}</button>
+</form>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+{% block titulo %}Cadastro de fornecedores{% endblock %}
+{% block conteudo %}
+<header class="pg">
+  <div><h1>Cadastro de fornecedores</h1><div class="d">Cadastre prestadores, contatos e contratos da organização.</div></div>
+  <a class="btn" href="{% url 'fornecedores:criar' %}">+ Novo fornecedor</a>
+</header>
+
+<form method="get" class="admin-search">
+  <input class="inp" type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome, documento ou serviço">
+  <button class="btn sec" type="submit">Buscar</button>
+</form>
+
+<div class="card"><div class="tw"><table>
+  <thead><tr><th>Fornecedor</th><th>CNPJ/CPF</th><th>Produto ou serviço</th><th>Cidades atendidas</th><th>Contratos</th><th>Status</th><th>Ações</th></tr></thead>
+  <tbody>
+  {% for fornecedor in fornecedores %}
+    <tr class="{% if not fornecedor.ativo %}row-inactive{% endif %}">
+      <td><b>{{ fornecedor }}</b>{% if fornecedor.nome_fantasia %}<div class="hint">{{ fornecedor.razao_social }}</div>{% endif %}</td>
+      <td>{{ fornecedor.cnpj_cpf }}</td>
+      <td>{{ fornecedor.servico_fornecido }}</td>
+      <td>{% for unidade in fornecedor.cidades_atendidas.all %}{{ unidade.municipio }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+      <td>{{ fornecedor.total_contratos }}</td>
+      <td><span class="pill {% if fornecedor.ativo %}p-ok{% else %}p-pend{% endif %}">{% if fornecedor.ativo %}Ativo{% else %}Inativo{% endif %}</span></td>
+      <td class="admin-actions"><a class="btn sec sm" href="{% url 'fornecedores:detalhe' fornecedor.uuid %}">Visualizar</a></td>
+    </tr>
+  {% empty %}<tr><td colspan="7" class="empty-state">Nenhum fornecedor encontrado.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}
+
